@@ -21,20 +21,17 @@ Or install it yourself as:
 
 To include abcjs in your Rails app, add this line to application.js:
 
-{{{
-//= require abcjs-rails
-}}}
+	//= require abcjs-rails
 
 See http://code.google.com/p/abcjs/wiki/InstallationDocumentation?tm=6 for complete
 usage of abcjs. There is no additional functionality supplied by this gem.
 
 Here is a cheatsheet for using the functionality:
-{{{
-new ABCJS.Editor("abc", { canvas_id: "canvas0", midi_id:"midi", warnings_id:"warnings" });
-ABCJS.numberOfTunes(abcString);
-ABCJS.renderAbc(div, abcString, parserParams, printerParams, renderParams);
-ABCJS.renderMidi(div, abcString, parserParams, midiParams, renderParams);
-}}}
+
+	new ABCJS.Editor("abc", { canvas_id: "canvas0", midi_id:"midi", warnings_id:"warnings" });
+	ABCJS.numberOfTunes(abcString);
+	ABCJS.renderAbc(div, abcString, parserParams, printerParams, renderParams);
+	ABCJS.renderMidi(div, abcString, parserParams, midiParams, renderParams);
 
 
 ## Contributing
