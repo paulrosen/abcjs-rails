@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
   gem.summary       = "This packages the abcjs javascript files in a gem for easy reuse in Rails applications."
   gem.homepage      = "http://paulrosen.net"
 
-  gem.files = Dir["{lib,vendor}/**/*"] + ["LICENSE", "README.md"]
+  gem.files = Dir["{lib,app}/**/*"] + ["LICENSE", "README.md"]
   gem.name          = "abcjs-rails"
   gem.require_paths = ["lib"]
   gem.version       = Abcjs::Rails::VERSION
