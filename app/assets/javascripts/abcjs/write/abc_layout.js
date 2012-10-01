@@ -49,6 +49,7 @@ ABCJS.write.Layout = function(glyphs, bagpipes) {
   this.s = 0; // current staff number
   this.v = 0; // current voice number on current staff
   this.stafflines = 5;
+  this.tripletmultiplier = 1;
 };
 
 ABCJS.write.Layout.prototype.getCurrentVoiceId = function() {
@@ -255,14 +256,24 @@ ABCJS.write.Layout.prototype.printNote = function(elem, nostem, dontDraw) { //st
   var width, p1, p2, dx;
 
   var duration = ABCJS.write.getDuration(elem);
-  var durlog = Math.floor(Math.log(duration)/Math.log(2));
+  if (duration === 0) { duration = 0.25; nostem = true; }	//PER: zero duration will draw a quarter note head.
+  var durlog = Math.floor(Math.log(duration)/Math.log(2));  //TODO use getDurlog
   var dot=0;
 
   for (var tot = Math.pow(2,durlog), inc=tot/2; tot<duration; dot++,tot+=inc,inc/=2);
   
-  var abselem = new ABCJS.write.AbsoluteElement(elem, duration, 1);
-
   
+  if (elem.startTriplet) {
+	  if (elem.startTriplet === 2)
+	    this.tripletmultiplier = 3/2;
+	  else
+	    this.tripletmultiplier=(elem.startTriplet-1)/elem.startTriplet;
+  }
+  
+
+  var abselem = new ABCJS.write.AbsoluteElement(elem, duration * this.tripletmultiplier, 1);
+  
+
   if (elem.rest) {
     var restpitch = 7;
     if (this.stemdir==="down") restpitch = 3;
@@ -306,8 +317,8 @@ ABCJS.write.Layout.prototype.printNote = function(elem, nostem, dontDraw) { //st
       var delta = (dir==="down")?prev.pitch-curr.pitch:curr.pitch-prev.pitch;
       if (delta<=1 && !prev.printer_shift) {
         curr.printer_shift=(delta)?"different":"same";
-        if (curr.pitch > 11 || curr.pitch < 1) {	// PER: add extra ledger line
-          additionalLedgers.push(curr.pitch - (curr.pitch%2));
+        if (curr.verticalPos > 11 || curr.verticalPos < 1) {	// PER: add extra ledger line
+          additionalLedgers.push(curr.verticalPos - (curr.verticalPos%2));
         }
 	if (dir==="down") {
 	  this.roomtaken = this.glyphs.getSymbolWidth(this.chartable.note[-durlog])+2;
@@ -495,11 +506,19 @@ ABCJS.write.Layout.prototype.printNote = function(elem, nostem, dontDraw) { //st
 	abselem.addRight(new ABCJS.write.RelativeElement(elem.chord[i].name, x, this.glyphs.getSymbolWidth(elem.chord[i].name[0])+4, y, {type:"text"}));
 	break;
       case "below":
-	y = -3;
-    abselem.addChild(new ABCJS.write.RelativeElement(elem.chord[i].name, x, 0, y, {type:"text"}));
+	y = elem.minpitch-4;
+			  if (y > -3) y = -3;
+			  var eachLine = elem.chord[i].name.split("\n");
+			  for (var ii = 0; ii < eachLine.length; ii++) {
+				abselem.addChild(new ABCJS.write.RelativeElement(eachLine[ii], x, 0, y, {type:"text"}));
+				  y -= 3;	// TODO-PER: This should actually be based on the font height.
+			  }
     break;
       default:
-	abselem.addChild(new ABCJS.write.RelativeElement(elem.chord[i].name, x, 0, y, {type:"text"}));
+			  if (elem.chord[i].rel_position)
+				  abselem.addChild(new ABCJS.write.RelativeElement(elem.chord[i].name, x+elem.chord[i].rel_position.x, 0, elem.minpitch+elem.chord[i].rel_position.y/ABCJS.write.spacing.STEP, {type:"text"}));
+			  else
+				  abselem.addChild(new ABCJS.write.RelativeElement(elem.chord[i].name, x, 0, y, {type:"text"}));
       }
     }
   }
@@ -514,6 +533,7 @@ ABCJS.write.Layout.prototype.printNote = function(elem, nostem, dontDraw) { //st
   if (elem.endTriplet && this.triplet) {
     this.triplet.anchor2 = notehead;
     this.triplet = null;
+    this.tripletmultiplier = 1;
   }
 
   return abselem;
@@ -767,9 +787,9 @@ ABCJS.write.Layout.prototype.printDecoration = function(decoration, pitch, width
     abselem.addChild(new ABCJS.write.RelativeElement(dec, deltax, this.glyphs.getSymbolWidth(dec), ypos));
   }
   if (compoundDec) {	// PER: added new decorations
-	  ypos = (dir) ? pitch+1:pitch+9;
+	  ypos = (dir === 'down') ? pitch+1:pitch+9;
 	  deltax = width/2;
-	  deltax += (dir) ? -5 : 3;
+	  deltax += (dir === 'down') ? -5 : 3;
 	  for (var xx = 0; xx < compoundDec[1]; xx++) {
 		  ypos -= 1;
 		  abselem.addChild(new ABCJS.write.RelativeElement(compoundDec[0], deltax, this.glyphs.getSymbolWidth(compoundDec[0]), ypos));
@@ -875,32 +895,30 @@ ABCJS.write.Layout.prototype.printBarLine = function (elem) {
 ABCJS.write.Layout.prototype.printClef = function(elem) {
   var clef = "clefs.G";
   var octave = 0;
-  var pitch = 4;
   var abselem = new ABCJS.write.AbsoluteElement(elem,0,10);
   switch (elem.type) {
   case "treble": break;
-  case "tenor": clef="clefs.C"; pitch=8; break;
-  case "alto": clef="clefs.C"; pitch=6; break;
-  case "bass": clef="clefs.F"; pitch=8; break;
+  case "tenor": clef="clefs.C"; break;
+  case "alto": clef="clefs.C"; break;
+  case "bass": clef="clefs.F"; break;
   case 'treble+8': octave = 1; break;
-  case 'tenor+8':clef="clefs.C"; pitch=8; break;
-  case 'bass+8': clef="clefs.F"; pitch=8; break;
-  case 'alto+8': clef="clefs.C"; pitch=6; break;
+  case 'tenor+8':clef="clefs.C"; octave = 1; break;
+  case 'bass+8': clef="clefs.F"; octave = 1; break;
+  case 'alto+8': clef="clefs.C"; octave = 1; break;
   case 'treble-8': octave = -1; break;
-  case 'tenor-8':clef="clefs.C"; pitch=8; break;
-  case 'bass-8': clef="clefs.F"; pitch=8; break;
-  case 'alto-8': clef="clefs.C"; pitch=6; break;
+  case 'tenor-8':clef="clefs.C"; octave = -1; break;
+  case 'bass-8': clef="clefs.F"; octave = -1; break;
+  case 'alto-8': clef="clefs.C"; octave = -1; break;
   case 'none': clef=""; break;
-  case 'perc': clef="clefs.perc"; pitch=6; break;
+  case 'perc': clef="clefs.perc"; break;
   default: abselem.addChild(new ABCJS.write.RelativeElement("clef="+elem.type, 0, 0, 0, {type:"debug"}));
   }    
-  if (elem.verticalPos) {
-    pitch = elem.verticalPos;
-  }
-  
+//  if (elem.verticalPos) {
+//    pitch = elem.verticalPos;
+//  }
   var dx =10;
   if (clef!=="") {
-    abselem.addRight(new ABCJS.write.RelativeElement(clef, dx, this.glyphs.getSymbolWidth(clef), pitch));
+    abselem.addRight(new ABCJS.write.RelativeElement(clef, dx, this.glyphs.getSymbolWidth(clef), elem.clefPos));
   }
   if (octave!==0) {
     var scale= 2/3;

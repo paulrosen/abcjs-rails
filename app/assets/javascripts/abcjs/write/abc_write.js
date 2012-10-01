@@ -411,8 +411,8 @@ ABCJS.write.Printer.prototype.printTune = function (abctune) {
     if (abcline.staff) {
       var staffgroup = this.layouter.printABCLine(abcline.staff);
       var newspace = this.space;
-      for (var it=0;it<3;it++) {
-	staffgroup.layout(newspace,this);
+      for (var it=0;it<3;it++) { // TODO shouldn't need this triple pass any more
+	staffgroup.layout(newspace,this, false);
 	if (line && line===abctune.lines.length-1 && staffgroup.w/this.width<0.66 && !abctune.formatting.stretchlast) break; // don't stretch last line too much unless it is 1st
 	var relspace = staffgroup.spacingunits*newspace;
 	var constspace = staffgroup.w-relspace;
@@ -426,7 +426,7 @@ ABCJS.write.Printer.prototype.printTune = function (abctune) {
       staffgroup.draw(this,this.y);
       if (staffgroup.w>maxwidth) maxwidth = staffgroup.w;
       this.staffgroups[this.staffgroups.length] = staffgroup;
-      this.y = staffgroup.y+staffgroup.height; 
+      this.y = staffgroup.y+staffgroup.height;
       this.y+=ABCJS.write.spacing.STAVEHEIGHT*0.2;
     } else if (abcline.subtitle && line!==0) {
       this.printSubtitleLine(abcline);
