@@ -388,8 +388,9 @@ ABCJS.write.Printer.prototype.printTune = function (abctune) {
     this.width=this.staffwidth;
   }
   this.width+=this.paddingleft;
-  if (abctune.formatting.scale) { this.scale=abctune.formatting.scale; } else this.scale = 1;
-  this.paper.text(this.width*this.scale/2, this.y, abctune.metaText.title).attr({"font-size":20*this.scale, "font-family":"serif"});
+  if (abctune.formatting.scale) { this.scale=abctune.formatting.scale; }
+	if (abctune.metaText.title)
+	  this.paper.text(this.width*this.scale/2, this.y, abctune.metaText.title).attr({"font-size":20*this.scale, "font-family":"serif"});
   this.y+=20*this.scale;
   if (abctune.lines[0] && abctune.lines[0].subtitle) {
     this.printSubtitleLine(abctune.lines[0]);
@@ -460,9 +461,10 @@ ABCJS.write.Printer.prototype.printTune = function (abctune) {
   if (abctune.metaText.history) extraText += "History: " + abctune.metaText.history + "\n";
   text2 = this.paper.text(this.paddingleft, this.y*this.scale+25*this.scale, extraText).attr({"text-anchor":"start", "font-family":"serif", "font-size":17*this.scale});
   height = text2.getBBox().height;
+	if (!height) height = 25*this.scale;	// TODO-PER: Hack! Don't know why Raphael chokes on this sometimes and returns NaN. Perhaps only when printing to PDF? Possibly if the SVG is hidden?
   text2.translate(0,height/2);
   this.y+=25*this.scale+height*this.scale;
-  var sizetoset = {w: (maxwidth+this.paddingright)*this.scale,h: this.y+this.paddingbottom*this.scale};
+  var sizetoset = {w: (maxwidth+this.paddingright)*this.scale,h: (this.y+this.paddingbottom)*this.scale};
   this.paper.setSize(sizetoset.w,sizetoset.h);
   // Correct for IE problem in calculating height
   var isIE=/*@cc_on!@*/false;//IE detector
