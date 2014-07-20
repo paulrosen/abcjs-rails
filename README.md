@@ -23,7 +23,7 @@ To include abcjs in your Rails app, add this line to application.js:
 
 	//= require abcjs-rails
 
-See http://code.google.com/p/abcjs/wiki/InstallationDocumentation?tm=6 for complete
+See https://github.com/paulrosen/abcjs for complete
 usage of abcjs. There is no additional functionality supplied by this gem.
 
 Here is a cheatsheet for using the functionality:
