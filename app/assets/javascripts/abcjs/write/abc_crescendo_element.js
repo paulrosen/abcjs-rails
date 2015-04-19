@@ -22,12 +22,37 @@ if (!window.ABCJS)
 if (!window.ABCJS.write)
 	window.ABCJS.write = {};
 
-ABCJS.write.CrescendoElem = function(anchor1, anchor2, dir) {
+ABCJS.write.CrescendoElem = function(anchor1, anchor2, dir, positioning) {
 	this.anchor1 = anchor1; // must have a .x and a .parent property or be null (means starts at the "beginning" of the line - after keysig)
 	this.anchor2 = anchor2; // must have a .x property or be null (means ends at the end of the line)
 	this.dir = dir; // either "<" or ">"
+	if (positioning === 'above')
+		this.dynamicHeightAbove = 4;
+	else
+		this.dynamicHeightBelow = 4;
+	this.pitch = undefined; // This will be set later
 };
 
+<<<<<<< HEAD:write/abc_crescendo_element.js
+ABCJS.write.CrescendoElem.prototype.setUpperAndLowerElements = function(positionY) {
+	if (this.dynamicHeightAbove)
+		this.pitch = positionY.dynamicHeightAbove;
+	else
+		this.pitch = positionY.dynamicHeightBelow;
+};
+
+ABCJS.write.CrescendoElem.prototype.draw = function (renderer) {
+	if (this.pitch === undefined)
+		window.console.error("Crescendo Element y-coordinate not set.");
+	var y = renderer.calcY(this.pitch) + 4; // This is the top pixel to use (it is offset a little so that it looks good with the volume marks.)
+	var height = 8;
+	if (this.dir === "<") {
+		this.drawLine(renderer, y+height/2, y);
+		this.drawLine(renderer, y+height/2, y+height);
+	} else {
+		this.drawLine(renderer, y, y+height/2);
+		this.drawLine(renderer, y+height, y+height/2);
+=======
 ABCJS.write.CrescendoElem.prototype.draw = function (renderer) {
 	if (this.dir === "<") {
 		this.drawLine(renderer, 0, -4);
@@ -35,12 +60,18 @@ ABCJS.write.CrescendoElem.prototype.draw = function (renderer) {
 	} else {
 		this.drawLine(renderer, -4, 0);
 		this.drawLine(renderer, 4, 0);
+>>>>>>> origin/master:write/abc_cresendo_element.js
 	}
 };
 
 ABCJS.write.CrescendoElem.prototype.drawLine = function (renderer, y1, y2) {
+<<<<<<< HEAD:write/abc_crescendo_element.js
+	var pathString = ABCJS.write.sprintf("M %f %f L %f %f",
+		this.anchor1.x, y1, this.anchor2.x, y2);
+=======
 	var ypos = renderer.layouter.minY - 7;
 	var pathString = ABCJS.write.sprintf("M %f %f L %f %f",
 		this.anchor1.x, renderer.calcY(ypos)+y1-4, this.anchor2.x, renderer.calcY(ypos)+y2-4);
+>>>>>>> origin/master:write/abc_cresendo_element.js
 	renderer.printPath({path:pathString, stroke:"#000000", 'class': renderer.addClasses('decoration')});
 };

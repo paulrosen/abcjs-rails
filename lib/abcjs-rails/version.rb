@@ -1,5 +1,5 @@
 module Abcjs
   module Rails
-    VERSION = "1.11"
+    VERSION = "2.0"
   end
 end
