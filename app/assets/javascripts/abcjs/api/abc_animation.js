@@ -20,10 +20,7 @@ if (!window.ABCJS)
 	window.ABCJS = {};
 
 (function() {
-<<<<<<< HEAD
 	"use strict";
-=======
->>>>>>> origin/master
 
 	function hasClass(element, cls) {
 		var elClass = element.getAttribute("class");
@@ -83,10 +80,7 @@ if (!window.ABCJS)
 		if (options.showCursor) {
 			cursor = $('<div class="cursor" style="position: absolute;"></div>');
 			$(paper).append(cursor);
-<<<<<<< HEAD
 			$(paper).css({ position: "relative" });
-=======
->>>>>>> origin/master
 		}
 
 		stopNextTime = false;
@@ -136,7 +130,6 @@ if (!window.ABCJS)
 			for (var line=0;line<engraver.staffgroups.length; line++) {
 				var group = engraver.staffgroups[line];
 				var voices = group.voices;
-<<<<<<< HEAD
 				var firstStaff = group.staffs[0];
 				var middleC = firstStaff.absoluteY;
 				var top = middleC - firstStaff.top*ABCJS.write.spacing.STEP;
@@ -144,10 +137,6 @@ if (!window.ABCJS)
 				middleC = lastStaff.absoluteY;
 				var bottom = middleC - lastStaff.bottom*ABCJS.write.spacing.STEP;
 				var height = bottom - top;
-=======
-				var top = group.y;
-				var height = group.height;
->>>>>>> origin/master
 				var maxVoiceTime = 0;
 				// Put in the notes for all voices, then sort them, then remove duplicates
 				for (var v = 0; v < voices.length; v++) {
@@ -165,16 +154,12 @@ if (!window.ABCJS)
 								// If the note is tied on both sides it can just be ignored.
 							} else {
 								// the last note wasn't tied.
-<<<<<<< HEAD
 								if (!eventHash["event"+voiceTime])
 									eventHash["event"+voiceTime] = { type: "event", time: voiceTime, top: top, height: height, left: element.x, width: element.w };
 								else {
 									// If there is more than one voice then two notes can fall at the same time. Usually they would be lined up in the same place, but if it is a whole rest, then it is placed funny. In any case, the left most element wins.
 									eventHash["event"+voiceTime].left = Math.min(eventHash["event"+voiceTime].left, element.x);
 								}
-=======
-								eventHash["event"+voiceTime] = { type: "event", time: voiceTime, top: top, height: height, left: element.x, width: element.w };
->>>>>>> origin/master
 								if (isTiedToNext)
 									isTiedState = true;
 							}
@@ -218,13 +203,9 @@ if (!window.ABCJS)
 			if (currentNote.type === "bar") {
 				if (options.hideFinishedMeasures)
 					processMeasureHider(currentNote.lineNum, currentNote.measureNum);
-<<<<<<< HEAD
 				if (timingEvents.length > 0)
 					return timingEvents[0].time / beatLength;
 				return 0;
-=======
-				return processShowCursor();
->>>>>>> origin/master
 			}
 			if (options.showCursor)
 				cursor.css({ left: currentNote.left + "px", top: currentNote.top + "px", width: currentNote.width + "px", height: currentNote.height + "px" });

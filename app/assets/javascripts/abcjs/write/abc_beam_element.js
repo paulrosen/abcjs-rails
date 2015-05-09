@@ -116,6 +116,11 @@ if (!window.ABCJS.write)
 		return getBarYAt(beam.startX, beam.startY, beam.endX, beam.endY, midPoint);
 	};
 
+	ABCJS.write.BeamElem.prototype.yAtNote = function(element) {
+		var beam = this.beams[0];
+		return getBarYAt(beam.startX, beam.startY, beam.endX, beam.endY, element.x);
+	};
+
 	ABCJS.write.BeamElem.prototype.xAtMidpoint = function(startX, endX) {
 		return startX + (endX - startX)/2;
 	};
@@ -177,7 +182,6 @@ if (!window.ABCJS.write)
 			'class': renderer.addClasses('beam-elem')
 		});
 	}
-<<<<<<< HEAD
 
 	function calcXPos(asc, firstElement, lastElement) {
 		var starthead = firstElement.heads[asc ? 0 : firstElement.heads.length - 1];
@@ -207,83 +211,6 @@ if (!window.ABCJS.write)
 			} else if (!asc && pos > 6) {
 				startY = 6;
 				endY = 6;
-=======
-};
-
-ABCJS.write.BeamElem.prototype.draw = function(renderer) {
-	if (this.elems.length === 0 || this.allrests) return;
-	this.drawBeam(renderer);
-	this.drawStems(renderer);
-};
-
-ABCJS.write.BeamElem.prototype.calcDir = function() {
-	var average = this.average();
-	//	var barpos = (this.isgrace)? 5:7;
-	this.asc = (this.forceup || this.isgrace || average<6) && (!this.forcedown); // hardcoded 6 is B
-	return this.asc;
-};
-
-ABCJS.write.BeamElem.prototype.drawBeam = function(renderer) {
-	var average = this.average();
-	var barpos = (this.isgrace)? 5:7;
-	this.calcDir();
-
-	var barminpos = this.asc ? 5 : 8;	//PER: I just bumped up the minimum height for notes with descending stems to clear a rest in the middle of them.
-	this.pos = Math.round(this.asc ? Math.max(average+barpos,this.max+barminpos) : Math.min(average-barpos,this.min-barminpos));
-	var slant = this.elems[0].abcelem.averagepitch-this.elems[this.elems.length-1].abcelem.averagepitch;
-	if (this.isflat) slant=0;
-	var maxslant = this.elems.length/2;
-
-	if (slant>maxslant) slant = maxslant;
-	if (slant<-maxslant) slant = -maxslant;
-	this.starty = renderer.calcY(this.pos+Math.floor(slant/2));
-	this.endy = renderer.calcY(this.pos+Math.floor(-slant/2));
-
-	var starthead = this.elems[0].heads[(this.asc)? 0: this.elems[0].heads.length-1];
-	var endhead = this.elems[this.elems.length-1].heads[(this.asc)? 0: this.elems[this.elems.length-1].heads.length-1];
-	this.startx = starthead.x;
-	if(this.asc) this.startx+=starthead.w-0.6;
-	this.endx = endhead.x;
-	if(this.asc) this.endx+=endhead.w;
-
-	// PER: if the notes are too high or too low, make the beam go down to the middle
-	if (this.asc && this.pos < 6) {
-		this.starty = renderer.calcY(6);
-		this.endy = renderer.calcY(6);
-	} else if (!this.asc && this.pos > 6) {
-		this.starty = renderer.calcY(6);
-		this.endy = renderer.calcY(6);
-	}
-
-	var pathString = "M"+this.startx+" "+this.starty+" L"+this.endx+" "+this.endy+
-		"L"+this.endx+" "+(this.endy+this.dy) +" L"+this.startx+" "+(this.starty+this.dy)+"z";
-	renderer.printPath({path:pathString, stroke:"none", fill:"#000000", 'class': renderer.addClasses('beam-elem')});
-};
-
-ABCJS.write.BeamElem.prototype.drawStems = function(renderer) {
-	var auxbeams = [];  // auxbeam will be {x, y, durlog, single} auxbeam[0] should match with durlog=-4 (16th) (j=-4-durlog)
-	renderer.beginGroup();
-	for (var i=0,ii=this.elems.length; i<ii; i++) {
-		if (this.elems[i].abcelem.rest)
-			continue;
-		var furthesthead = this.elems[i].heads[(this.asc)? 0: this.elems[i].heads.length-1];
-		var ovaldelta = (this.isgrace)?1/3:1/5;
-		var pitch = furthesthead.pitch + ((this.asc) ? ovaldelta : -ovaldelta);
-		var y = renderer.calcY(pitch);
-		var x = furthesthead.x + ((this.asc) ? furthesthead.w: 0);
-		var bary=this.getBarYAt(x);
-		var dx = (this.asc) ? -0.6 : 0.6;
-		renderer.printStem(x,dx,y,bary);
-
-		var sy = (this.asc) ? 1.5*ABCJS.write.spacing.STEP: -1.5*ABCJS.write.spacing.STEP;
-		if (this.isgrace) sy = sy*2/3;
-		for (var durlog=ABCJS.write.getDurlog(this.elems[i].abcelem.duration); durlog<-3; durlog++) { // get the duration via abcelem because of triplets
-			if (auxbeams[-4-durlog]) {
-				auxbeams[-4-durlog].single = false;
-			} else {
-				auxbeams[-4-durlog] = {x:x+((this.asc)?-0.6:0), y:bary+sy*(-4-durlog+1),
-					durlog:durlog, single:true};
->>>>>>> origin/master
 			}
 		}
 
@@ -351,7 +278,6 @@ ABCJS.write.BeamElem.prototype.drawStems = function(renderer) {
 				}
 			}
 
-<<<<<<< HEAD
 			for (var j = auxBeams.length - 1; j >= 0; j--) {
 				if (i === elems.length - 1 || ABCJS.write.getDurlog(elems[i + 1].abcelem.duration) > (-j - 4)) {
 
@@ -366,23 +292,8 @@ ABCJS.write.BeamElem.prototype.drawStems = function(renderer) {
 					beams.push({ startX: auxBeams[j].x, endX: auxBeamEndX, startY: auxBeams[j].y, endY: auxBeamEndY, dy: dy });
 					auxBeams = auxBeams.slice(0, j);
 				}
-=======
-				var pathString ="M"+auxbeams[j].x+" "+auxbeams[j].y+" L"+auxbeamendx+" "+auxbeamendy+
-					"L"+auxbeamendx+" "+(auxbeamendy+this.dy) +" L"+auxbeams[j].x+" "+(auxbeams[j].y+this.dy)+"z";
-				renderer.printPath({path:pathString, stroke:"none", fill:"#000000", 'class': renderer.addClasses('beam-elem')});
-				auxbeams = auxbeams.slice(0,j);
->>>>>>> origin/master
 			}
 		}
 		return beams;
 	}
-<<<<<<< HEAD
 })();
-=======
-	renderer.endGroup('beam-elem');
-};
-
-ABCJS.write.BeamElem.prototype.getBarYAt = function(x) {
-	return this.starty + (this.endy-this.starty)/(this.endx-this.startx)*(x-this.startx);
-};
->>>>>>> origin/master

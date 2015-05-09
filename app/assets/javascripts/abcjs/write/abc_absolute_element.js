@@ -105,6 +105,15 @@ ABCJS.write.AbsoluteElement.prototype.addRight = function (right) {
 	this.addChild(right);
 };
 
+ABCJS.write.AbsoluteElement.prototype.addCentered = function (elem) {
+	var half = elem.w/2;
+	if (-half<this.extraw) this.extraw = -half;
+	this.extra[this.extra.length] = elem;
+	if (elem.dx+half>this.w) this.w = elem.dx+half;
+	this.right[this.right.length] = elem;
+	this.addChild(elem);
+};
+
 ABCJS.write.AbsoluteElement.prototype.setLimit = function(member, child) {
 	if (!child[member]) return;
 	if (!this.specialY[member])
@@ -150,29 +159,22 @@ ABCJS.write.AbsoluteElement.prototype.pushBottom = function (bottom) {
 	}
 };
 
-<<<<<<< HEAD
 ABCJS.write.AbsoluteElement.prototype.setX = function (x) {
 	this.x = x;
 	for (var i=0; i<this.children.length; i++)
 		this.children[i].setX(x);
 };
 
-=======
->>>>>>> origin/master
 ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 	this.elemset = renderer.paper.set();
 	if (this.invisible) return;
 	renderer.beginGroup();
 	for (var i=0; i<this.children.length; i++) {
-<<<<<<< HEAD
 		if (ABCJS.write.debugPlacement) {
 			if (this.children[i].klass === 'ornament')
 				renderer.printShadedBox(this.x, renderer.calcY(this.children[i].top), this.w, renderer.calcY(this.children[i].bottom)-renderer.calcY(this.children[i].top), "rgba(0,0,200,0.3)");
 		}
 		this.elemset.push(this.children[i].draw(renderer,bartop));
-=======
-		this.elemset.push(this.children[i].draw(renderer,this.x, bartop));
->>>>>>> origin/master
 	}
 	this.elemset.push(renderer.endGroup(this.type));
 	if (this.klass)
@@ -180,7 +182,6 @@ ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 	var color = ABCJS.write.debugPlacement ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0)"; // Create transparent box that encompasses the element, and not so transparent to debug it.
 	var target = renderer.printShadedBox(this.x, renderer.calcY(this.top), this.w, renderer.calcY(this.bottom)-renderer.calcY(this.top), color);
 	var self = this;
-<<<<<<< HEAD
 	var controller = renderer.controller;
 //	this.elemset.mouseup(function () {
 	target.mouseup(function () {
@@ -189,14 +190,6 @@ ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 	this.abcelem.abselem = this;
 
 	var spacing = ABCJS.write.spacing.STEP;
-=======
-	this.elemset.mouseup(function () {
-		renderer.notifySelect(self);
-	});
-	this.abcelem.abselem = this;
-
-	var spacing = ABCJS.write.spacing.STEP*renderer.scale;
->>>>>>> origin/master
 
 	var start = function () {
 			// storing original relative coordinates
@@ -210,7 +203,6 @@ ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 			this.translate(0,this.dy);
 		},
 		up = function () {
-<<<<<<< HEAD
 			if (self.abcelem.pitches) {
 				var delta = -Math.round(this.dy / spacing);
 				self.abcelem.pitches[0].pitch += delta;
@@ -219,14 +211,6 @@ ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 			}
 		};
 	if (this.abcelem.el_type==="note" && controller.editable)
-=======
-			var delta = -Math.round(this.dy/spacing);
-			self.abcelem.pitches[0].pitch += delta;
-			self.abcelem.pitches[0].verticalPos += delta;
-			renderer.notifyChange();
-		};
-	if (this.abcelem.el_type==="note" && renderer.editable)
->>>>>>> origin/master
 		this.elemset.drag(move, start, up);
 };
 

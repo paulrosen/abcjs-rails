@@ -30,7 +30,6 @@ ABCJS.write.EndingElem = function(text, anchor1, anchor2) {
 	this.pitch = undefined; // This will be set later
 };
 
-<<<<<<< HEAD
 ABCJS.write.EndingElem.prototype.setUpperAndLowerElements = function(positionY) {
 	this.pitch = positionY.endingHeightAbove;
 };
@@ -40,44 +39,25 @@ ABCJS.write.EndingElem.prototype.draw = function (renderer, linestartx, lineendx
 		window.console.error("Ending Element y-coordinate not set.");
 	var y = renderer.calcY(this.pitch);
 	var height = 20;
-=======
-ABCJS.write.EndingElem.prototype.draw = function (renderer, linestartx, lineendx) {
->>>>>>> origin/master
 	var pathString;
 	if (this.anchor1) {
 		linestartx = this.anchor1.x+this.anchor1.w;
 		pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-<<<<<<< HEAD
 			linestartx, y, linestartx, y+height);
 		renderer.printPath({path:pathString, stroke:"#000000", fill:"#000000", 'class': renderer.addClasses('ending')});
 		renderer.renderText(linestartx+5, renderer.calcY(this.pitch-0.5), this.text, 'repeatfont', 'ending',"start");
-=======
-			linestartx, renderer.y, linestartx, renderer.y+10);
-		renderer.printPath({path:pathString, stroke:"#000000", fill:"#000000", 'class': renderer.addClasses('ending')}); //TODO scale
-		renderer.renderText(linestartx+5, renderer.calcY(18.5), this.text, 'repeatfont', 'ending',"start");
->>>>>>> origin/master
 	}
 
 	if (this.anchor2) {
 		lineendx = this.anchor2.x;
 		pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-<<<<<<< HEAD
 			lineendx, y, lineendx, y+height);
 		renderer.printPath({path:pathString, stroke:"#000000", fill:"#000000", 'class': renderer.addClasses('ending')});
-=======
-			lineendx, renderer.y, lineendx, renderer.y+10);
-		renderer.printPath({path:pathString, stroke:"#000000", fill:"#000000", 'class': renderer.addClasses('ending')}); // TODO scale
->>>>>>> origin/master
 	}
 
 
 	pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-<<<<<<< HEAD
 		linestartx, y, lineendx, y);
 	renderer.printPath({path:pathString, stroke:"#000000", fill:"#000000", 'class': renderer.addClasses('ending')});
-=======
-		linestartx, renderer.y, lineendx, renderer.y);
-	renderer.printPath({path:pathString, stroke:"#000000", fill:"#000000", 'class': renderer.addClasses('ending')});  // TODO scale
->>>>>>> origin/master
 };
 

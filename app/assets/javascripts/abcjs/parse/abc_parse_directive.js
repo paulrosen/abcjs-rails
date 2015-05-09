@@ -34,10 +34,7 @@ window.ABCJS.parse.parseDirective = {};
 		multilineVars.vocalfont  = { face: "\"Times New Roman\"", size: 13, weight: "bold", style: "normal", decoration: "none" };
 		multilineVars.wordsfont  = { face: "\"Times New Roman\"", size: 16, weight: "normal", style: "normal", decoration: "none" };
 
-<<<<<<< HEAD
 		// These fonts are global for the entire tune.
-=======
->>>>>>> origin/master
 		tune.formatting.composerfont  = { face: "\"Times New Roman\"", size: 14, weight: "normal", style: "italic", decoration: "none" };
 		tune.formatting.subtitlefont  = { face: "\"Times New Roman\"", size: 16, weight: "normal", style: "normal", decoration: "none" };
 		tune.formatting.tempofont  = { face: "\"Times New Roman\"", size: 15, weight: "bold", style: "normal", decoration: "none" };
@@ -45,7 +42,6 @@ window.ABCJS.parse.parseDirective = {};
 		tune.formatting.footerfont  = { face: "\"Times New Roman\"", size: 12, weight: "normal", style: "normal", decoration: "none" };
 		tune.formatting.headerfont  = { face: "\"Times New Roman\"", size: 12, weight: "normal", style: "normal", decoration: "none" };
 		tune.formatting.voicefont  = { face: "\"Times New Roman\"", size: 13, weight: "bold", style: "normal", decoration: "none" };
-<<<<<<< HEAD
 
 		// these are the default fonts for these element types. In the printer, these fonts might change as the tune progresses.
 		tune.formatting.annotationfont  = multilineVars.annotationfont;
@@ -58,8 +54,6 @@ window.ABCJS.parse.parseDirective = {};
 		tune.formatting.textfont  = multilineVars.textfont;
 		tune.formatting.vocalfont  = multilineVars.vocalfont;
 		tune.formatting.wordsfont  = multilineVars.wordsfont;
-=======
->>>>>>> origin/master
 	}
 
 	var fontTypeCanHaveBox = { gchordfont: true, measurefont: true, partsfont: true };
@@ -283,13 +277,8 @@ window.ABCJS.parse.parseDirective = {};
 			if (!currentSetting) {
 				warn("Must specify the size of the font since there is no default value.", str, position);
 				size = 12;
-<<<<<<< HEAD
 			} else
 				size = currentSetting.size;
-=======
-			}
-			size = currentSetting.size;
->>>>>>> origin/master
 		} else
 			size = parseFloat(size);
 
@@ -320,6 +309,8 @@ window.ABCJS.parse.parseDirective = {};
 		if (tokens.length === 0)
 			return "Directive \"" + cmd + "\" requires a font as a parameter.";
 		multilineVars[cmd] = getFontParameter(tokens, multilineVars[cmd], str, 0, cmd);
+		if (multilineVars.is_in_header) // If the font appears in the header, then it becomes the default font.
+			tune.formatting[cmd] = multilineVars[cmd];
 		return null;
 	};
 	var getGlobalFont = function(cmd, tokens, str) {
@@ -372,7 +363,6 @@ window.ABCJS.parse.parseDirective = {};
 		if (str !== null) return str;
 		multilineVars[key] = (multilineVars[key] === 1);
 		return null;
-<<<<<<< HEAD
 	};
 
 	var addMultilineVarOneParamChoice = function(key, cmd, tokens, choices) {
@@ -388,8 +378,6 @@ window.ABCJS.parse.parseDirective = {};
 			return "Directive \"" + cmd + "\" requires one of [ " + choices.join(", ") + " ] as a parameter.";
 		multilineVars[key] = choice;
 		return null;
-=======
->>>>>>> origin/master
 	};
 
 	window.ABCJS.parse.parseDirective.parseFontChangeLine = function(textstr) {
@@ -455,10 +443,6 @@ window.ABCJS.parse.parseDirective = {};
 			//					straightflags: { type: "boolean", optional: true },
 			//					stretchstaff: { type: "boolean", optional: true },
 			//					titleformat: { type: "string", optional: true },
-<<<<<<< HEAD
-=======
-			//					vocalabove: { type: "boolean", optional: true },
->>>>>>> origin/master
 			case "bagpipes":tune.formatting.bagpipes = true;break;
 			case "landscape":multilineVars.landscape = true;break;
 			case "papersize":multilineVars.papersize = restOfString;break;

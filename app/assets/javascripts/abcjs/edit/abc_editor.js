@@ -241,13 +241,8 @@ window.ABCJS.Editor.prototype.renderTune = function(abc, params, div) {
   abcParser.parse(tunebook.tunes[0].abc, params); //TODO handle multiple tunes
   var tune = abcParser.getTune();
   var paper = Raphael(div, 800, 400);
-<<<<<<< HEAD
   var engraver_controller = new ABCJS.write.EngraverController(paper, this.engraverparams);
   engraver_controller.engraveABC(tune);
-=======
-  var engraver_controller = new ABCJS.write.Printer(paper, this.engraverparams);
-  engraver_controller.printABC(tune);
->>>>>>> origin/master
 };
 
 window.ABCJS.Editor.prototype.modelChanged = function() {
@@ -264,13 +259,8 @@ window.ABCJS.Editor.prototype.modelChanged = function() {
   this.timerId = null;
   this.div.innerHTML = "";
   var paper = Raphael(this.div, 800, 400);
-<<<<<<< HEAD
   this.engraver_controller = new ABCJS.write.EngraverController(paper, this.engraverparams);
   this.engraver_controller.engraveABC(this.tunes);
-=======
-  this.engraver_controller = new ABCJS.write.Printer(paper, this.engraverparams);
-  this.engraver_controller.printABC(this.tunes);
->>>>>>> origin/master
 	this.tunes[0].engraver = this.engraver_controller;	// TODO-PER: We actually want an output object for each tune, not the entire controller. When refactoring, don't save data in the controller.
   if (ABCJS.midi.MidiWriter && this.mididiv) {
     if (this.mididiv !== this.div)

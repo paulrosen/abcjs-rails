@@ -201,36 +201,21 @@ ABCJS.write.StaffGroupElement.prototype.finished = function() {
 	return true;
 };
 
-<<<<<<< HEAD
 ABCJS.write.StaffGroupElement.prototype.layout = function(spacing, renderer, debug) {
+	var epsilon = 0.0000001; // Fudging for inexactness of floating point math.
 	this.spacingunits = 0; // number of times we will have ended up using the spacing distance (as opposed to fixed width distances)
 	this.minspace = 1000; // a big number to start off with - used to find out what the smallest space between two notes is -- GD 2014.1.7
 	var x = renderer.padding.left;
-=======
-ABCJS.write.StaffGroupElement.prototype.layout = function(spacing, controller, debug) {
-	this.spacingunits = 0; // number of times we will have ended up using the spacing distance (as opposed to fixed width distances)
-	this.minspace = 1000; // a big number to start off with - used to find out what the smallest space between two notes is -- GD 2014.1.7
-	var x = controller.paddingleft*controller.scale;
->>>>>>> origin/master
 
 	// find out how much space will be taken up by voice headers
 	var voiceheaderw = 0;
 	for (var i=0;i<this.voices.length;i++) {
 		if(this.voices[i].header) {
-<<<<<<< HEAD
 			var size = renderer.getTextSize(this.voices[i].header, 'voicefont', '');
 			voiceheaderw = Math.max(voiceheaderw,size.width);
 		}
 	}
 	x=x+voiceheaderw*1.1; // When there is no voice header, 110% of 0 is 0
-=======
-			var t = controller.renderText(100, this.y-10, this.voices[i].header, 'voicefont', ''); // code duplicated below  // don't scale this as we ask for the bbox
-			voiceheaderw = Math.max(voiceheaderw,t.getBBox().width);
-			t.remove();
-		}
-	}
-	x=x+voiceheaderw*(1/controller.scale)*1.1; // 10% of 0 is 0
->>>>>>> origin/master
 	this.startx=x;
 
 	var currentduration = 0;
@@ -254,7 +239,9 @@ ABCJS.write.StaffGroupElement.prototype.layout = function(spacing, controller, d
 		var currentvoices = [];
 		var othervoices = [];
 		for (i=0;i<this.voices.length;i++) {
-			if (this.voices[i].getDurationIndex() !== currentduration) {
+			var durationIndex = this.voices[i].getDurationIndex();
+			// PER: Because of the inexactness of JS floating point math, we just get close.
+			if (durationIndex - currentduration > epsilon) {
 				othervoices.push(this.voices[i]);
 				//console.log("out: voice ",i);
 			} else {
@@ -319,7 +306,6 @@ ABCJS.write.StaffGroupElement.prototype.layout = function(spacing, controller, d
 	}
 };
 
-<<<<<<< HEAD
 ABCJS.write.StaffGroupElement.prototype.calcHeight = function () {
 	// the height is calculated here in a parallel way to the drawing below in hopes that both of these functions will be modified together.
 	// TODO-PER: also add the space between staves. (That's systemStaffSeparation, which is the minimum distance between the staff LINES.)
@@ -330,33 +316,11 @@ ABCJS.write.StaffGroupElement.prototype.calcHeight = function () {
 			height += staff.top;
 			if (staff.bottom < 0)
 				height += -staff.bottom;
-=======
-ABCJS.write.StaffGroupElement.prototype.draw = function (renderer, y) {
-
-	this.y = y;
-	for (var i=0;i<this.staffs.length;i++) {
-		var shiftabove = this.staffs[i].highest - ((i===0)? 20 : 15);
-		var shiftbelow = this.staffs[i].lowest - ((i===this.staffs.length-1)? 0 : 0);
-		this.staffs[i].top = y;
-		if (shiftabove > 0) y+= shiftabove*ABCJS.write.spacing.STEP;
-		this.staffs[i].y = y;
-		y+= ABCJS.write.spacing.STAVEHEIGHT*0.9; // position of the words
-		if (shiftbelow < 0) y-= shiftbelow*ABCJS.write.spacing.STEP;
-		this.staffs[i].bottom = y;
-
-		if (this.stafflines[i] !== 0) {
-			renderer.y = this.staffs[i].y;
-			// TODO-PER: stafflines should always have been set somewhere, so this shouldn't be necessary.
-			if (this.stafflines[i] === undefined)
-				this.stafflines[i] = 5;
-			renderer.printStave(this.startx, this.w, this.stafflines[i]);
->>>>>>> origin/master
 		}
 	}
 	return height;
 };
 
-<<<<<<< HEAD
 ABCJS.write.StaffGroupElement.prototype.draw = function (renderer) {
 	// We enter this method with renderer.y pointing to the topmost coordinate that we're allowed to draw.
 	// All of the children that will be drawn have a relative "pitch" set, where zero is the first ledger line below the staff.
@@ -402,27 +366,10 @@ ABCJS.write.StaffGroupElement.prototype.draw = function (renderer) {
 		}
 		if (staff1.bottom < 0)
 			renderer.moveY(ABCJS.write.spacing.STEP, -staff1.bottom);
-=======
-	var bartop = 0;
-	renderer.measureNumber = null;
-	for (i=0;i<this.voices.length;i++) {
-		this.voices[i].draw(renderer, bartop);
-		bartop = this.voices[i].barbottom;
-	}
-	renderer.measureNumber = null;
-
-	if (this.staffs.length>1) {
-		renderer.y = this.staffs[0].y;
-		var top = renderer.calcY(10);
-		renderer.y = this.staffs[this.staffs.length-1].y;
-		var bottom = renderer.calcY(2);
-		renderer.printStem(this.startx, 0.6, top, bottom);
->>>>>>> origin/master
 	}
 	var topLine; // these are to connect multiple staves. We need to remember where they are.
 	var bottomLine;
 
-<<<<<<< HEAD
 	var bartop = 0;
 	renderer.measureNumber = null;
 	for (var i=0;i<this.voices.length;i++) {
@@ -445,16 +392,6 @@ ABCJS.write.StaffGroupElement.prototype.draw = function (renderer) {
 		}
 	}
 	renderer.measureNumber = null;
-=======
-//	for (i=0;i<this.staffs.length;i++) {
-//		if (this.stafflines[i] === 0) continue;
-//		renderer.y = this.staffs[i].y;
-//		// TODO-PER: stafflines should always have been set somewhere, so this shouldn't be necessary.
-//		if (this.stafflines[i] === undefined)
-//			this.stafflines[i] = 5;
-//		renderer.printStave(this.startx,this.w, this.stafflines[i]);
-//	}
->>>>>>> origin/master
 
 	// connect all the staves together with a vertical line
 	if (this.staffs.length>1) {

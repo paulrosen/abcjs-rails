@@ -156,13 +156,8 @@ if (!window.ABCJS)
 			/* jshint -W064 */ var paper = Raphael(div, width, 400); /* jshint +W064 */
 			if (engraverParams === undefined)
 				engraverParams = {};
-<<<<<<< HEAD
 			var engraver_controller = new ABCJS.write.EngraverController(paper, engraverParams);
 			engraver_controller.engraveABC(tune);
-=======
-			var engraver_controller = new ABCJS.write.Printer(paper, engraverParams);
-			engraver_controller.printABC(tune);
->>>>>>> origin/master
 			tune.engraver = engraver_controller;
 		}
 

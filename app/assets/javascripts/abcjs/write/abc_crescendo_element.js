@@ -33,7 +33,6 @@ ABCJS.write.CrescendoElem = function(anchor1, anchor2, dir, positioning) {
 	this.pitch = undefined; // This will be set later
 };
 
-<<<<<<< HEAD:write/abc_crescendo_element.js
 ABCJS.write.CrescendoElem.prototype.setUpperAndLowerElements = function(positionY) {
 	if (this.dynamicHeightAbove)
 		this.pitch = positionY.dynamicHeightAbove;
@@ -52,26 +51,11 @@ ABCJS.write.CrescendoElem.prototype.draw = function (renderer) {
 	} else {
 		this.drawLine(renderer, y, y+height/2);
 		this.drawLine(renderer, y+height, y+height/2);
-=======
-ABCJS.write.CrescendoElem.prototype.draw = function (renderer) {
-	if (this.dir === "<") {
-		this.drawLine(renderer, 0, -4);
-		this.drawLine(renderer, 0, 4);
-	} else {
-		this.drawLine(renderer, -4, 0);
-		this.drawLine(renderer, 4, 0);
->>>>>>> origin/master:write/abc_cresendo_element.js
 	}
 };
 
 ABCJS.write.CrescendoElem.prototype.drawLine = function (renderer, y1, y2) {
-<<<<<<< HEAD:write/abc_crescendo_element.js
 	var pathString = ABCJS.write.sprintf("M %f %f L %f %f",
 		this.anchor1.x, y1, this.anchor2.x, y2);
-=======
-	var ypos = renderer.layouter.minY - 7;
-	var pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-		this.anchor1.x, renderer.calcY(ypos)+y1-4, this.anchor2.x, renderer.calcY(ypos)+y2-4);
->>>>>>> origin/master:write/abc_cresendo_element.js
 	renderer.printPath({path:pathString, stroke:"#000000", 'class': renderer.addClasses('decoration')});
 };

@@ -77,6 +77,29 @@ ABCJS.write.VoiceElement.prototype.setLimit = function(member, child) {
 		this.specialY[member] = Math.max(this.specialY[member], specialY[member]);
 };
 
+ABCJS.write.VoiceElement.prototype.moveDecorations = function(beam) {
+	var padding = 1.5; // This is the vertical padding between elements, in pitches.
+	for (var ch = 0; ch < beam.elems.length; ch++) {
+		var child = beam.elems[ch];
+		if (child.top) {
+			// We now know where the ornaments should have been placed, so move them if they would overlap.
+			var top = beam.yAtNote(child);
+			for (var i = 0; i < child.children.length; i++) {
+				var el = child.children[i];
+				if (el.klass === 'ornament') {
+					if (el.bottom - padding < top) {
+						var distance = top - el.bottom + padding; // Find the distance that it needs to move and add a little margin so the element doesn't touch the beam.
+						el.bottom += distance;
+						el.top += distance;
+						el.pitch += distance;
+						top = child.top = el.top;
+					}
+				}
+			}
+		}
+	}
+};
+
 ABCJS.write.VoiceElement.prototype.adjustRange = function(child) {
 	if (child.bottom !== undefined)
 		this.bottom = Math.min(this.bottom, child.bottom);
@@ -201,7 +224,6 @@ ABCJS.write.VoiceElement.prototype.shiftRight = function (dx) {
 
 ABCJS.write.VoiceElement.prototype.draw = function (renderer, bartop) {
 	var width = this.w-1;
-<<<<<<< HEAD
 	renderer.staffbottom = this.staff.bottom;
 	//this.barbottom = renderer.calcY(2);
 
@@ -209,18 +231,6 @@ ABCJS.write.VoiceElement.prototype.draw = function (renderer, bartop) {
 	if (this.header) { // print voice name
 		var textpitch = 14 - (this.voicenumber+1)*(12/(this.voicetotal+1));
 		renderer.renderText(renderer.padding.left, renderer.calcY(textpitch), this.header, 'voicefont', 'staff-extra voice-name', 'start');
-=======
-	renderer.y = this.staff.y;
-	renderer.staffbottom = this.staff.bottom;
-	this.barbottom = renderer.calcY(2);
-
-	renderer.measureNumber = null;
-	if (this.header) { // print voice name
-		var textpitch = 12 - (this.voicenumber+1)*(12/(this.voicetotal+1));
-		var headerX = (this.startx-renderer.paddingleft)/2+renderer.paddingleft;
-		headerX = headerX*renderer.scale;
-		renderer.renderText(headerX, renderer.calcY(textpitch), this.header, 'voicefont', 'staff-extra voice-name');
->>>>>>> origin/master
 	}
 
 	for (var i=0, ii=this.children.length; i<ii; i++) {
@@ -258,6 +268,7 @@ ABCJS.write.VoiceElement.prototype.layoutBeams = function() {
 	for (var i = 0; i < this.beams.length; i++) {
 		if (this.beams[i].layout) {
 			this.beams[i].layout();
+			this.moveDecorations(this.beams[i]);
 			// The above will change the top and bottom of the abselem children, so see if we need to expand our range.
 			for (var j = 0; j < this.beams[i].elems.length; j++) {
 				this.adjustRange(this.beams[i].elems[j]);

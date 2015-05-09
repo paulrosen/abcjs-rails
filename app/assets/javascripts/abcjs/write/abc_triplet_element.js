@@ -25,7 +25,6 @@ if (!window.ABCJS.write)
 (function() {
 	"use strict";
 
-<<<<<<< HEAD
 	ABCJS.write.TripletElem = function(number, anchor1) {
 		this.anchor1 = anchor1; // must have a .x and a .parent property or be null (means starts at the "beginning" of the line - after keysig)
 		this.number = number;
@@ -78,59 +77,11 @@ if (!window.ABCJS.write)
 		y1 = renderer.calcY(y1);
 		y2 = renderer.calcY(y2);
 		var bracketHeight = 5;
-=======
-ABCJS.write.TripletElem.prototype.draw = function (renderer, linestartx, lineendx) {
-	// TODO end and beginning of line
-	if (this.anchor1 && this.anchor2) {
-		var ypos = this.above?16:-1;	// PER: Just bumped this up from 14 to make (3z2B2B2 (3B2B2z2 succeed. There's probably a better way.
-
-		if (this.anchor1.parent.beam &&
-			this.anchor1.parent.beam===this.anchor2.parent.beam) {
-			var beam = this.anchor1.parent.beam;
-			this.above = beam.asc;
-			ypos = beam.pos;
-		} else {
-			this.drawLine(renderer,renderer.calcY(ypos));
-		}
-		var xsum = this.anchor1.x+this.anchor2.x;
-		var ydelta = 0;
-		if (beam) {
-			if (this.above) {
-				xsum += (this.anchor2.w + this.anchor1.w);
-				ydelta = 4;
-			} else {
-				ydelta = -4;
-			}
-		} else {
-			xsum += this.anchor2.w;
-		}
-
-		renderer.renderText(xsum/2, renderer.calcY(ypos+ydelta), this.number, 'annotationfont', "middle", "triplet"); // TODO-PER: There doesn't seem to be a tripletfont defined.
-	}
-};
-
-ABCJS.write.TripletElem.prototype.drawLine = function (renderer, y) {
-	var pathString;
-	var linestartx = this.anchor1.x;
-	pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-		linestartx, y, linestartx, y+5);
-	renderer.printPath({path:pathString, stroke:"#000000", 'class': renderer.addClasses('triplet')});
-
-	var lineendx = this.anchor2.x+this.anchor2.w;
-	pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-		lineendx, y, lineendx, y+5);
-	renderer.printPath({path:pathString, stroke:"#000000", 'class': renderer.addClasses('triplet')});
-
-	pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-		linestartx, y, (linestartx+lineendx)/2-5, y);
-	renderer.printPath({path:pathString, stroke:"#000000", 'class': renderer.addClasses('triplet')});
->>>>>>> origin/master
 
 		// Draw vertical lines at the beginning and end
 		drawLine(renderer, x1, y1, x1, y1 + bracketHeight);
 		drawLine(renderer, x2, y2, x2, y2 + bracketHeight);
 
-<<<<<<< HEAD
 		// figure out midpoints to draw the broken line.
 		var midX = x1 + (x2-x1)/2;
 		var midY = y1 + (y2-y1)/2;
@@ -144,9 +95,4 @@ ABCJS.write.TripletElem.prototype.drawLine = function (renderer, y) {
 		drawLine(renderer, rightStartX, rightStartY, x2, y2);
 	}
 })();
-=======
-	pathString = ABCJS.write.sprintf("M %f %f L %f %f",
-			(linestartx+lineendx)/2+5, y, lineendx, y);
-	renderer.printPath({path:pathString, stroke:"#000000", 'class': renderer.addClasses('triplet')});
->>>>>>> origin/master
 

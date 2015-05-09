@@ -54,46 +54,38 @@ ABCJS.write.RelativeElement = function(c, dx, w, pitch, opt) {
 	//	this.top += offset;
 	//	this.bottom += offset;
 	//}
+	var height = opt.height ? opt.height : 4; // The +1 is to give a little bit of padding.
 	this.centerVertically = false;
-	// TODO-PER: this should use the current font to determine the height. That requires the font to be passed in here, so refactor to store the font now instead of resolving it at draw time. This will allow the font to be changed mid-line, too.
-	var multiplier;
 	switch (this.type) {
 		case "debug":
-			this.chordHeightAbove = 3;
+			this.chordHeightAbove = height;
 			break;
 		case "lyric":
-			multiplier = this.c.split("\n").length;
 			if (opt.position && opt.position === 'below')
-				this.lyricHeightBelow = 3*multiplier;
+				this.lyricHeightBelow = height;
 			else
-				this.lyricHeightAbove = 3*multiplier;
+				this.lyricHeightAbove = height;
 			break;
 		case "chord":
-			multiplier = this.c.split("\n").length;
 			if (opt.position && opt.position === 'below')
-				this.chordHeightBelow = 4*multiplier;
+				this.chordHeightBelow = height;
 			else
-				this.chordHeightAbove = 4*multiplier;
+				this.chordHeightAbove = height;
 			break;
 		case "text":
-			multiplier = this.c.split("\n").length;
 			if (this.pitch === undefined) {
 				if (opt.position && opt.position === 'below')
-					this.chordHeightBelow = 4*multiplier;
+					this.chordHeightBelow = height;
 				else
-					this.chordHeightAbove = 4*multiplier;
+					this.chordHeightAbove = height;
 			} else
 				this.centerVertically = true;
 			break;
-		case "part": this.partHeightAbove = 6; break;
+		case "part": this.partHeightAbove = height; break;
 	}
 };
 
-<<<<<<< HEAD
 ABCJS.write.RelativeElement.prototype.setX = function (x) {
-=======
-ABCJS.write.RelativeElement.prototype.draw = function (renderer, x, bartop) {
->>>>>>> origin/master
 	this.x = x+this.dx;
 };
 
@@ -104,7 +96,6 @@ ABCJS.write.RelativeElement.prototype.draw = function (renderer, bartop) {
 	switch(this.type) {
 		case "symbol":
 			if (this.c===null) return null;
-<<<<<<< HEAD
 			var klass = "symbol";
 			if (this.klass) klass += " " + this.klass;
 			this.graphelem = renderer.printSymbol(this.x, this.pitch, this.c, this.scalex, this.scaley, renderer.addClasses(klass)); break;
@@ -132,39 +123,11 @@ ABCJS.write.RelativeElement.prototype.draw = function (renderer, bartop) {
 			this.graphelem = renderer.printStem(this.x, this.linewidth, y, (bartop)?bartop:renderer.calcY(this.pitch2)); break; // bartop can't be 0
 		case "stem":
 			this.graphelem = renderer.printStem(this.x, this.linewidth, y, renderer.calcY(this.pitch2)); break;
-=======
-			this.graphelem = renderer.printSymbol(this.x, this.pitch, this.c, this.scalex, this.scaley, renderer.addClasses('symbol')); break;
-		case "debug":
-			this.graphelem = renderer.renderText(this.x, this.y, this.c, "debugfont", 'debug-msg', 'start'); break;
-		case "barNumber":
-			this.graphelem = renderer.renderText(this.x, renderer.calcY(this.pitch), this.c, "measurefont", 'bar-number', "start");
-			break;
-		case "lyric":
-			this.graphelem = renderer.renderText(this.x, renderer.calcY(renderer.layouter.minY-7), this.c, "vocalfont", 'abc-lyric');
-			break;
-		case "chord":
-			this.graphelem = renderer.renderText(this.x, renderer.calcY(this.pitch), this.c, 'gchordfont', "start", "chord");
-			break;
-		case "text":
-			this.graphelem = renderer.renderText(this.x, renderer.calcY(this.pitch), this.c, 'annotationfont', "start", "annotation");
-			break;
-		case "bar":
-			this.graphelem = renderer.printStem(this.x, this.linewidth, renderer.calcY(this.pitch), (bartop)?bartop:renderer.calcY(this.pitch2)); break; // bartop can't be 0
-		case "stem":
-			this.graphelem = renderer.printStem(this.x, this.linewidth, renderer.calcY(this.pitch), renderer.calcY(this.pitch2)); break;
->>>>>>> origin/master
 		case "ledger":
 			this.graphelem = renderer.printStaveLine(this.x, this.x+this.w, this.pitch); break;
 	}
 	if (this.scalex!==1 && this.graphelem) {
-<<<<<<< HEAD
 		this.graphelem.scale(this.scalex, this.scaley, this.x, y);
-=======
-		this.graphelem.scale(this.scalex, this.scaley, this.x, renderer.calcY(this.pitch));
-	}
-	if (this.attributes) {
-		this.graphelem.attr(this.attributes);
->>>>>>> origin/master
 	}
 	return this.graphelem;
 };

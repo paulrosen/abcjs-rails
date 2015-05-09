@@ -30,15 +30,9 @@ ABCJS.write.TieElem = function(anchor1, anchor2, above, forceandshift, isTie) {
 	this.isTie = isTie;
 };
 
-<<<<<<< HEAD
 ABCJS.write.TieElem.prototype.setEndAnchor = function(anchor2) {
 	this.anchor2 = anchor2; // must have a .x and a .pitch property or be null (means ends at the end of the line)
 };
-=======
-ABCJS.write.TieElem.prototype.draw = function (renderer, linestartx, lineendx) {
-	var startpitch;
-	var endpitch;
->>>>>>> origin/master
 
 // If we encounter a repeat sign, then we don't want to extend either a tie or a slur past it, so these are called to be a limit.
 ABCJS.write.TieElem.prototype.setStartX = function(startLimitElem) {
@@ -107,24 +101,6 @@ ABCJS.write.TieElem.prototype.layout = function (lineStartX, lineEndX) {
 ABCJS.write.TieElem.prototype.draw = function (renderer, linestartx, lineendx) {
 	this.layout(linestartx, lineendx);
 
-<<<<<<< HEAD
 	renderer.drawArc(this.startX, this.endX, this.startY, this.endY,  this.above);
-=======
-	//  if (this.anchor1 && this.anchor2) {
-	//    if ((!this.force && this.anchor1.parent.beam && this.anchor2.parent.beam &&
-	//	 this.anchor1.parent.beam.asc===this.anchor2.parent.beam.asc) ||
-	//	((this.force==="up") || this.force==="down") && this.anchor1.parent.beam && this.anchor2.parent.beam && this.anchor1.parent.beam===this.anchor2.parent.beam) {
-	//      this.above = !this.anchor1.parent.beam.asc;
-	//      preservebeamdir = true;
-	//    }
-	//  }
-
-	//  var pitchshift = 0;
-	//  if (this.force==="up" && !preservebeamdir) pitchshift = 7;
-	//  if (this.force==="down" && !preservebeamdir) pitchshift = -7;
-
-	//	renderer.debugMsgLow(linestartx, debugMsg);
-	renderer.drawArc(linestartx, lineendx, startpitch, endpitch,  this.above);
->>>>>>> origin/master
 
 };
