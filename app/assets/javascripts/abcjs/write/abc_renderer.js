@@ -92,8 +92,8 @@ ABCJS.write.Renderer.prototype.setPaperSize = function (maxwidth, scale) {
 		this.paper.canvas.parentNode.setAttribute("style","width:"+w+"px");
 	if (scale !== 1) {
 		this.paper.canvas.style.transform = "scale("+scale+","+scale+")";
-		this.paper.canvas.style['-ms-tranform'] = "scale("+scale+","+scale+")";
-		this.paper.canvas.style['-webkit-tranform'] = "scale("+scale+","+scale+")";
+		this.paper.canvas.style['-ms-transform'] = "scale("+scale+","+scale+")";
+		this.paper.canvas.style['-webkit-transform'] = "scale("+scale+","+scale+")";
 		this.paper.canvas.style['transform-origin'] = "0 0";
 		this.paper.canvas.style['-ms-transform-origin-x'] = "0";
 		this.paper.canvas.style['-ms-transform-origin-y'] = "0";
@@ -101,8 +101,8 @@ ABCJS.write.Renderer.prototype.setPaperSize = function (maxwidth, scale) {
 		this.paper.canvas.style['-webkit-transform-origin-y'] = "0";
 	} else {
 		this.paper.canvas.style.transform = "";
-		this.paper.canvas.style['-ms-tranform'] = "";
-		this.paper.canvas.style['-webkit-tranform'] = "";
+		this.paper.canvas.style['-ms-transform'] = "";
+		this.paper.canvas.style['-webkit-transform'] = "";
 	}
 	this.paper.canvas.parentNode.style.overflow="hidden";
 	this.paper.canvas.parentNode.style.height=""+h+"px";
@@ -324,6 +324,7 @@ ABCJS.write.Renderer.prototype.engraveTopText = function(width, abctune) {
 ABCJS.write.Renderer.prototype.engraveExtraText = function(width, abctune) {
 	this.lineNumber = null;
 	this.measureNumber = null;
+	this.voiceNumber = null;
 
 	var extraText;
 	if (abctune.metaText.unalignedWords) {
@@ -613,6 +614,7 @@ ABCJS.write.Renderer.prototype.addClasses = function (c) {
 	if (c.length > 0) ret.push(c);
 	if (this.lineNumber !== null) ret.push("l"+this.lineNumber);
 	if (this.measureNumber !== null) ret.push("m"+this.measureNumber);
+	if (this.voiceNumber !== null) ret.push("v"+this.voiceNumber);
 	return ret.join(' ');
 };
 
