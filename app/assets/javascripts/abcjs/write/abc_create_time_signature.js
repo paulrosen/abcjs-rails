@@ -1,5 +1,5 @@
 //    abc_create_time_signature.js
-//    Copyright (C) 2010,2015 Gregory Dyke (gregdyke at gmail dot com) and Paul Rosen
+//    Copyright (C) 2010,2016 Gregory Dyke (gregdyke at gmail dot com) and Paul Rosen
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ if (!window.ABCJS.write)
 (function() {
 	"use strict";
 
-	ABCJS.write.createTimeSignature = function(elem) {
-		var abselem = new ABCJS.write.AbsoluteElement(elem,0,10, 'staff-extra');
+	ABCJS.write.createTimeSignature = function(elem, tuneNumber) {
+		var abselem = new ABCJS.write.AbsoluteElement(elem,0,10, 'staff-extra', tuneNumber);
 		if (elem.type === "specified") {
 			//TODO make the alignment for time signatures centered
 			for (var i = 0; i < elem.value.length; i++) {

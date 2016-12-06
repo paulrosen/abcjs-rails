@@ -130,7 +130,7 @@ ABCJS.write.Renderer.prototype.setPadding = function(abctune) {
 			self.padding[paddingKey] = abctune.formatting[formattingKey];
 		else if (self.paddingOverride[paddingKey] !== undefined)
 			self.padding[paddingKey] = self.paddingOverride[paddingKey];
-		else if (abctune.media === 'print')
+		else if (self.isPrint)
 			self.padding[paddingKey] = printDefault;
 		else
 			self.padding[paddingKey] = screenDefault;
@@ -138,7 +138,7 @@ ABCJS.write.Renderer.prototype.setPadding = function(abctune) {
 	// 1cm x 0.393701in/cm x 72pt/in x 1.33px/pt = 38px
 	// 1.8cm x 0.393701in/cm x 72pt/in x 1.33px/pt = 68px
 	setPaddingVariable(this, 'top', 'topmargin', 38, 15);
-	setPaddingVariable(this, 'bottom', 'bottommargin', 38, 15);
+	setPaddingVariable(this, 'bottom', 'botmargin', 38, 15);
 	setPaddingVariable(this, 'left', 'leftmargin', 68, 15);
 	setPaddingVariable(this, 'right', 'rightmargin', 68, 15);
 };
@@ -367,14 +367,24 @@ ABCJS.write.Renderer.prototype.engraveExtraText = function(width, abctune) {
  * @param {array or string} text
  */
 ABCJS.write.Renderer.prototype.outputFreeText = function (text) {
-	if (typeof text === 'string')
+	if (text === "") {	// we do want to print out blank lines if they have been specified.
+		var hash = this.getFontAndAttr('textfont', 'defined-text');
+		this.moveY(hash.attr['font-size'] * 2); // move the distance of the line, plus the distance of the margin, which is also one line.
+	} else if (typeof text === 'string')
 		this.outputTextIf(this.padding.left, text, 'textfont', 'defined-text', 0, 1, "start");
 	else {
 		var str = "";
+		var isCentered = false; // The structure is wrong here: it requires an array to do centering, but it shouldn't have.
 		for (var i = 0; i < text.length; i++) {
-			str += " FONT " + text[i].text;
+			if (text[i].font)
+				str += "FONT(" + text[i].font + ")";
+			str += text[i].text;
+			if (text[i].center)
+				isCentered = true;
 		}
-		this.outputTextIf(this.padding.left, str, 'textfont', 'defined-text', 0, 1, "start");
+		var alignment = isCentered ? 'middle' : 'start';
+		var x = isCentered ? this.controller.width / 2 : this.padding.left;
+		this.outputTextIf(x, str, 'textfont', 'defined-text', 0, 1, alignment);
 	}
 };
 
@@ -548,7 +558,43 @@ ABCJS.write.Renderer.prototype.printPath = function (attrs) {
   return ret;
 };
 
-ABCJS.write.Renderer.prototype.drawArc = function(x1, x2, pitch1, pitch2, above) {
+ABCJS.write.Renderer.prototype.drawBrace = function(xLeft, yTop, yBottom) {//Tony
+	var yHeight = yBottom - yTop;
+
+	var xCurve = [7.5, -8, 21, 0, 18.5, -10.5, 7.5];
+	var yCurve = [0, yHeight/5.5, yHeight/3.14, yHeight/2, yHeight/2.93, yHeight/4.88, 0];
+
+	var pathString = ABCJS.write.sprintf("M %f %f C %f %f %f %f %f %f C %f %f %f %f %f %f z",
+		xLeft+xCurve[0], yTop+yCurve[0],
+		xLeft+xCurve[1], yTop+yCurve[1],
+		xLeft+xCurve[2], yTop+yCurve[2],
+		xLeft+xCurve[3], yTop+yCurve[3],
+		xLeft+xCurve[4], yTop+yCurve[4],
+		xLeft+xCurve[5], yTop+yCurve[5],
+		xLeft+xCurve[6], yTop+yCurve[6]);
+	var ret1 = this.paper.path().attr({path:pathString, stroke:"#000000", fill:"#000000", 'class': this.addClasses('brace')});
+
+	xCurve = [0, 17.5, -7.5, 6.6, -5, 20, 0];
+	yCurve = [yHeight/2, yHeight/1.46, yHeight/1.22, yHeight, yHeight/1.19, yHeight/1.42, yHeight/2];
+
+	pathString = ABCJS.write.sprintf("M %f %f C %f %f %f %f %f %f C %f %f %f %f %f %f z",
+		xLeft+xCurve[ 0], yTop+yCurve[0],
+		xLeft+xCurve[1], yTop+yCurve[1],
+		xLeft+xCurve[2], yTop+yCurve[2],
+		xLeft+xCurve[3], yTop+yCurve[3],
+		xLeft+xCurve[4], yTop+yCurve[4],
+		xLeft+xCurve[5], yTop+yCurve[5],
+		xLeft+xCurve[6], yTop+yCurve[6]);
+	var ret2 = this.paper.path().attr({path:pathString, stroke:"#000000", fill:"#000000", 'class': this.addClasses('brace')});
+
+	if (this.doRegression){
+		this.addToRegression(ret1);
+		this.addToRegression(ret2);
+	}
+	return ret1 + ret2;
+};
+
+ABCJS.write.Renderer.prototype.drawArc = function(x1, x2, pitch1, pitch2, above, klass) {
 
 
   x1 = x1 + 6;
@@ -576,7 +622,11 @@ ABCJS.write.Renderer.prototype.drawArc = function(x1, x2, pitch1, pitch2, above)
   var pathString = ABCJS.write.sprintf("M %f %f C %f %f %f %f %f %f C %f %f %f %f %f %f z", x1, y1,
      controlx1, controly1, controlx2, controly2, x2, y2,
      controlx2-thickness*uy, controly2+thickness*ux, controlx1-thickness*uy, controly1+thickness*ux, x1, y1);
-  var ret = this.paper.path().attr({path:pathString, stroke:"none", fill:"#000000", 'class': this.addClasses('slur')});
+	if (klass)
+		klass += ' slur';
+	else
+		klass = 'slur';
+  var ret = this.paper.path().attr({path:pathString, stroke:"none", fill:"#000000", 'class': this.addClasses(klass)});
   if (this.doRegression) this.addToRegression(ret);
 
   return ret;
@@ -622,7 +672,7 @@ ABCJS.write.Renderer.prototype.getFontAndAttr = function(type, klass) {
 	var font = this.abctune.formatting[type];
 	// Raphael deliberately changes the font units to pixels for some reason, so we need to change points to pixels here.
 	if (font)
-		font = { face: font.face, size: font.size*4/3, decoration: font.decoration, style: font.style, weight: font.weight };
+		font = { face: font.face, size: font.size*4/3, decoration: font.decoration, style: font.style, weight: font.weight, box: font.box };
 	else
 		font = { face: "Arial", size: 12*4/3, decoration: "underline", style: "normal", weight: "normal" };
 
@@ -637,6 +687,8 @@ ABCJS.write.Renderer.prototype.getTextSize = function(text, type, klass) {
 	var hash = this.getFontAndAttr(type, klass);
 	var el = this.paper.text(0,0, text).attr(hash.attr);
 	var size = el.getBBox();
+	if (isNaN(size.height)) // This can happen if the element isn't visible.
+		size = { width: 0, height: 0};
 	el.remove();
 	return size;
 };
@@ -651,9 +703,13 @@ ABCJS.write.Renderer.prototype.renderText = function(x, y, text, type, klass, an
 		// The text will be placed centered in vertical alignment, so we need to move the box down so that
 		// the top of the text is where we've requested.
 		var size = el.getBBox();
-		el.attr({ "y": y + size.height / 2 });
-		if (hash.font.box) {
-			this.paper.rect(size.x - 1, size.y - 1, size.width + 2, size.height + 2).attr({"stroke": "#cccccc"});
+		if (isNaN(size.height)) // This can happen if the element is hidden.
+			el.attr({ "y": y });
+		else {
+			el.attr({"y": y + size.height / 2});
+			if (hash.font.box) {
+				this.paper.rect(size.x - 1, size.y + size.height / 2 - 1, size.width + 2, size.height + 2).attr({"stroke": "#888888"});
+			}
 		}
 	}
 	if (type === 'debugfont') {
@@ -681,13 +737,29 @@ ABCJS.write.Renderer.prototype.outputTextIf = function(x, str, kind, klass, marg
 		if (marginTop)
 			this.moveY(marginTop);
 		var el = this.renderText(x, this.y, str, kind, klass, alignment);
+		var bb = el.getBBox(); // This can return NaN if the element isn't visible.
+		var width = isNaN(bb.width) ? 0 : bb.width;
+		var height = isNaN(bb.height) ? 0 : bb.height;
 		if (marginBottom !== null) {
 			var numLines = str.split("\n").length;
-			this.moveY(el.getBBox().height/numLines, (numLines + marginBottom));
+			if (!isNaN(bb.height))
+				this.moveY(height/numLines, (numLines + marginBottom));
 		}
-		return [el.getBBox().width, el.getBBox().height];
+		return [width, height];
 	}
 	return [0,0];
+};
+
+ABCJS.write.Renderer.prototype.addInvisibleMarker = function (className) {
+	var dy = 0.35;
+	var fill = "rgba(0,0,0,0)";
+	var y = this.y;
+	y = Math.round(y);
+	var x1 = 0;
+	var x2 = 100;
+	var pathString = ABCJS.write.sprintf("M %f %f L %f %f L %f %f L %f %f z", x1, y-dy, x1+x2, y-dy,
+		x2, y+dy, x1, y+dy);
+	this.paper.path().attr({path:pathString, stroke:"none", fill:fill, 'class': this.addClasses(className), 'data-vertical': y }).toBack();
 };
 
 // For debugging, it is sometimes useful to know where you are vertically.

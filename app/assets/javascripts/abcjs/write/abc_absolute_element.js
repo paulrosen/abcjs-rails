@@ -25,8 +25,9 @@ if (!window.ABCJS.write)
 // duration - actual musical duration - different from notehead duration in triplets. refer to abcelem to get the notehead duration
 // minspacing - spacing which must be taken on top of the width defined by the duration
 // type is a meta-type for the element. It is not necessary for drawing, but it is useful to make semantic sense of the element. For instance, it can be used in the element's class name.
-ABCJS.write.AbsoluteElement = function(abcelem, duration, minspacing, type) {
+ABCJS.write.AbsoluteElement = function(abcelem, duration, minspacing, type, tuneNumber) {
 	//console.log("Absolute:",abcelem, type);
+	this.tuneNumber = tuneNumber;
 	this.abcelem = abcelem;
 	this.duration = duration;
 	this.minspacing = minspacing || 0;
@@ -165,6 +166,10 @@ ABCJS.write.AbsoluteElement.prototype.setX = function (x) {
 		this.children[i].setX(x);
 };
 
+ABCJS.write.AbsoluteElement.prototype.setHint = function () {
+	this.hint = true;
+};
+
 ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 	this.elemset = renderer.paper.set();
 	if (this.invisible) return;
@@ -179,13 +184,15 @@ ABCJS.write.AbsoluteElement.prototype.draw = function (renderer, bartop) {
 	this.elemset.push(renderer.endGroup(this.type));
 	if (this.klass)
 		this.setClass("mark", "", "#00ff00");
+	if (this.hint)
+		this.setClass("abcjs-hint", "", null);
 	var color = ABCJS.write.debugPlacement ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0)"; // Create transparent box that encompasses the element, and not so transparent to debug it.
 	var target = renderer.printShadedBox(this.x, renderer.calcY(this.top), this.w, renderer.calcY(this.bottom)-renderer.calcY(this.top), color);
 	var self = this;
 	var controller = renderer.controller;
 //	this.elemset.mouseup(function () {
 	target.mouseup(function () {
-		controller.notifySelect(self);
+		controller.notifySelect(self, self.tuneNumber);
 	});
 	this.abcelem.abselem = this;
 

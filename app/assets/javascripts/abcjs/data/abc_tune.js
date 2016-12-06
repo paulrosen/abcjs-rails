@@ -371,17 +371,36 @@ window.ABCJS.data.Tune = function() {
 			//}
 		}
 
+		function getNextMusicLine(lines, currentLine) {
+			currentLine++;
+			while (lines.length > currentLine) {
+				if (lines[currentLine].staff)
+					return lines[currentLine];
+			}
+			return null;
+		}
+
 		for (this.lineNum = 0; this.lineNum < this.lines.length; this.lineNum++) {
-			if (this.lines[this.lineNum].staff) for (this.staffNum = 0; this.staffNum < this.lines[this.lineNum].staff.length; this.staffNum++) {
-				if (this.lines[this.lineNum].staff[this.staffNum].clef)
-					fixClefPlacement(this.lines[this.lineNum].staff[this.staffNum].clef);
-				for (this.voiceNum = 0; this.voiceNum < this.lines[this.lineNum].staff[this.staffNum].voices.length; this.voiceNum++) {
-//					var el = this.getLastNote();
-//					if (el) el.end_beam = true;
-					cleanUpSlursInLine(this.lines[this.lineNum].staff[this.staffNum].voices[this.voiceNum]);
-					for (var j = 0; j < this.lines[this.lineNum].staff[this.staffNum].voices[this.voiceNum].length; j++)
-						if (this.lines[this.lineNum].staff[this.staffNum].voices[this.voiceNum][j].el_type === 'clef')
-							fixClefPlacement(this.lines[this.lineNum].staff[this.staffNum].voices[this.voiceNum][j]);
+			var staff = this.lines[this.lineNum].staff;
+			if (staff) {
+				for (this.staffNum = 0; this.staffNum < staff.length; this.staffNum++) {
+					if (staff[this.staffNum].clef)
+						fixClefPlacement(staff[this.staffNum].clef);
+					for (this.voiceNum = 0; this.voiceNum < staff[this.staffNum].voices.length; this.voiceNum++) {
+						var voice = staff[this.staffNum].voices[this.voiceNum];
+						cleanUpSlursInLine(voice);
+						for (var j = 0; j < voice.length; j++) {
+							if (voice[j].el_type === 'clef')
+								fixClefPlacement(voice[j]);
+						}
+						if (voice[voice.length-1].barNumber) {
+							// Don't hang a bar number on the last bar line: it should go on the next line.
+							var nextLine = getNextMusicLine(this.lines, this.lineNum);
+							if (nextLine)
+								nextLine.staff[0].barNumber = voice[voice.length-1].barNumber;
+							delete voice[voice.length-1].barNumber;
+						}
+					}
 				}
 			}
 		}
@@ -534,46 +553,48 @@ window.ABCJS.data.Tune = function() {
 		// Clone the object because it will be sticking around for the next line and we don't want the extra fields in it.
 		var hashParams = window.ABCJS.parse.clone(hashParams2);
 
-		// If this is a clef type, then we replace the working clef on the line. This is kept separate from
-		// the clef in case there is an inline clef field. We need to know what the current position for
-		// the note is.
-		if (type === 'clef')
-			this.lines[this.lineNum].staff[this.staffNum].workingClef = hashParams;
+		if (this.lines[this.lineNum].staff) { // be sure that we are on a music type line before doing the following.
+			// If this is a clef type, then we replace the working clef on the line. This is kept separate from
+			// the clef in case there is an inline clef field. We need to know what the current position for
+			// the note is.
+			if (type === 'clef')
+				this.lines[this.lineNum].staff[this.staffNum].workingClef = hashParams;
 
-		// If this is the first item in this staff, then we might have to initialize the staff, first.
-		if (this.lines[this.lineNum].staff.length <= this.staffNum) {
-			this.lines[this.lineNum].staff[this.staffNum] = {};
-			this.lines[this.lineNum].staff[this.staffNum].clef = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].clef);
-			this.lines[this.lineNum].staff[this.staffNum].key = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].key);
-			this.lines[this.lineNum].staff[this.staffNum].meter = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].meter);
-			this.lines[this.lineNum].staff[this.staffNum].workingClef = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].workingClef);
-			this.lines[this.lineNum].staff[this.staffNum].voices = [[]];
-		}
+			// If this is the first item in this staff, then we might have to initialize the staff, first.
+			if (this.lines[this.lineNum].staff.length <= this.staffNum) {
+				this.lines[this.lineNum].staff[this.staffNum] = {};
+				this.lines[this.lineNum].staff[this.staffNum].clef = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].clef);
+				this.lines[this.lineNum].staff[this.staffNum].key = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].key);
+				this.lines[this.lineNum].staff[this.staffNum].meter = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].meter);
+				this.lines[this.lineNum].staff[this.staffNum].workingClef = window.ABCJS.parse.clone(this.lines[this.lineNum].staff[0].workingClef);
+				this.lines[this.lineNum].staff[this.staffNum].voices = [[]];
+			}
 
-		// These elements should not be added twice, so if the element exists on this line without a note or bar before it, just replace the staff version.
-		var voice = this.lines[this.lineNum].staff[this.staffNum].voices[this.voiceNum];
-		for (var i = 0; i < voice.length; i++) {
-			if (voice[i].el_type === 'note' || voice[i].el_type === 'bar') {
-				hashParams.el_type = type;
-				hashParams.startChar = startChar;
-				hashParams.endChar = endChar;
-				if (impliedNaturals)
-					hashParams.accidentals = impliedNaturals.concat(hashParams.accidentals);
-				voice.push(hashParams);
-				return;
+			// These elements should not be added twice, so if the element exists on this line without a note or bar before it, just replace the staff version.
+			var voice = this.lines[this.lineNum].staff[this.staffNum].voices[this.voiceNum];
+			for (var i = 0; i < voice.length; i++) {
+				if (voice[i].el_type === 'note' || voice[i].el_type === 'bar') {
+					hashParams.el_type = type;
+					hashParams.startChar = startChar;
+					hashParams.endChar = endChar;
+					if (impliedNaturals)
+						hashParams.accidentals = impliedNaturals.concat(hashParams.accidentals);
+					voice.push(hashParams);
+					return;
+				}
+				if (voice[i].el_type === type) {
+					hashParams.el_type = type;
+					hashParams.startChar = startChar;
+					hashParams.endChar = endChar;
+					if (impliedNaturals)
+						hashParams.accidentals = impliedNaturals.concat(hashParams.accidentals);
+					voice[i] = hashParams;
+					return;
+				}
 			}
-			if (voice[i].el_type === type) {
-				hashParams.el_type = type;
-				hashParams.startChar = startChar;
-				hashParams.endChar = endChar;
-				if (impliedNaturals)
-					hashParams.accidentals = impliedNaturals.concat(hashParams.accidentals);
-				voice[i] = hashParams;
-				return;
-			}
+			// We didn't see either that type or a note, so replace the element to the staff.
+			this.lines[this.lineNum].staff[this.staffNum][type] = hashParams2;
 		}
-		// We didn't see either that type or a note, so replace the element to the staff.
-		this.lines[this.lineNum].staff[this.staffNum][type] = hashParams2;
 	};
 
 	this.getNumLines = function() {
@@ -675,6 +696,7 @@ window.ABCJS.data.Tune = function() {
 			if (params.bracket) This.lines[This.lineNum].staff[This.staffNum].bracket = params.bracket;
 			if (params.brace) This.lines[This.lineNum].staff[This.staffNum].brace = params.brace;
 			if (params.connectBarLines) This.lines[This.lineNum].staff[This.staffNum].connectBarLines = params.connectBarLines;
+			if (params.barNumber) This.lines[This.lineNum].staff[This.staffNum].barNumber = params.barNumber;
 			createVoice(params);
 			// Some stuff just happens for the first voice
 			if (params.part)

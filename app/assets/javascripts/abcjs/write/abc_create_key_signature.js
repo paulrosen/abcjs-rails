@@ -1,5 +1,5 @@
 //    abc_create_key_signature.js
-//    Copyright (C) 2010,2015 Gregory Dyke (gregdyke at gmail dot com) and Paul Rosen
+//    Copyright (C) 2010,2016 Gregory Dyke (gregdyke at gmail dot com) and Paul Rosen
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -25,10 +25,10 @@ if (!window.ABCJS.write)
 (function() {
 	"use strict";
 
-	ABCJS.write.createKeySignature = function(elem) {
+	ABCJS.write.createKeySignature = function(elem, tuneNumber) {
 		if (!elem.accidentals || elem.accidentals.length === 0)
 			return null;
-		var abselem = new ABCJS.write.AbsoluteElement(elem, 0, 10, 'staff-extra');
+		var abselem = new ABCJS.write.AbsoluteElement(elem, 0, 10, 'staff-extra', tuneNumber);
 		var dx = 0;
 		window.ABCJS.parse.each(elem.accidentals, function(acc) {
 			var symbol = (acc.acc === "sharp") ? "accidentals.sharp" : (acc.acc === "natural") ? "accidentals.nat" : "accidentals.flat";

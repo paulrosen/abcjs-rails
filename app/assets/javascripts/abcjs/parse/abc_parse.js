@@ -840,14 +840,12 @@ window.ABCJS.parse.Parse = function() {
 			if (multilineVars.currentVoice.style)
 				params.style = multilineVars.currentVoice.style;
 		}
+		var isFirstVoice = multilineVars.currentVoice === undefined || (multilineVars.currentVoice.staffNum ===  0 && multilineVars.currentVoice.index ===  0);
+		if (multilineVars.barNumbers === 0 && isFirstVoice && multilineVars.currBarNumber !== 1)
+			params.barNumber = multilineVars.currBarNumber;
 		tune.startNewLine(params);
 
 		multilineVars.partForNextLine = "";
-		if (multilineVars.currentVoice === undefined || (multilineVars.currentVoice.staffNum === multilineVars.staves.length-1 && multilineVars.staves[multilineVars.currentVoice.staffNum].numVoices-1 === multilineVars.currentVoice.index)) {
-			//multilineVars.meter = null;
-			if (multilineVars.barNumbers === 0)
-				multilineVars.barNumOnNextNote = multilineVars.currBarNumber;
-		}
 	}
 
 	var letter_to_grace =  function(line, i) {
@@ -1145,9 +1143,12 @@ window.ABCJS.parse.Parse = function() {
 						else if (bar.endEnding)
 							multilineVars.barFirstEndingNum = undefined;
 						if (bar.type !== 'bar_invisible' && multilineVars.measureNotEmpty) {
-							multilineVars.currBarNumber++;
-							if (multilineVars.barNumbers && multilineVars.currBarNumber % multilineVars.barNumbers === 0)
-								multilineVars.barNumOnNextNote = multilineVars.currBarNumber;
+							var isFirstVoice = multilineVars.currentVoice === undefined || (multilineVars.currentVoice.staffNum ===  0 && multilineVars.currentVoice.index ===  0);
+							if (isFirstVoice) {
+								multilineVars.currBarNumber++;
+								if (multilineVars.barNumbers && multilineVars.currBarNumber % multilineVars.barNumbers === 0)
+									bar.barNumber = multilineVars.currBarNumber;
+							}
 						}
 						multilineVars.addFormattingOptions(el, tune.formatting, 'bar');
 						tune.appendElement('bar', startOfLine+i, startOfLine+i+ret[0], bar);
@@ -1291,10 +1292,7 @@ window.ABCJS.parse.Parse = function() {
 									if (chordDuration !== null) {
 										el.duration = el.duration * chordDuration;
 									}
-									if (multilineVars.barNumOnNextNote) {
-										el.barNumber = multilineVars.barNumOnNextNote;
-										multilineVars.barNumOnNextNote = null;
-									}
+
 									multilineVars.addFormattingOptions(el, tune.formatting, 'note');
 									tune.appendElement('note', startOfLine+chordStartChar, startOfLine+i, el);
 									multilineVars.measureNotEmpty = true;
@@ -1365,10 +1363,6 @@ window.ABCJS.parse.Parse = function() {
 								el.duration = durationOfMeasure(multilineVars);
 							}
 
-							if (multilineVars.barNumOnNextNote) {
-								el.barNumber = multilineVars.barNumOnNextNote;
-								multilineVars.barNumOnNextNote = null;
-							}
 							multilineVars.addFormattingOptions(el, tune.formatting, 'note');
 							tune.appendElement('note', startOfLine+startI, startOfLine+i, el);
 							multilineVars.measureNotEmpty = true;
@@ -1400,12 +1394,57 @@ window.ABCJS.parse.Parse = function() {
 			parseLine(ret.str);
 	};
 
+	function appendLastMeasure(voice, nextVoice) {
+		voice.push({
+			el_type: 'hint'
+		});
+		for (var i = 0; i < nextVoice.length; i++) {
+			var element = nextVoice[i];
+			var hint = window.ABCJS.parse.clone(element);
+			voice.push(hint);
+			if (element.el_type === 'bar')
+					return;
+		}
+	}
+
+	function addHintMeasure(staff, nextStaff) {
+		for (var i = 0; i < staff.length; i++) {
+			var stave = staff[i];
+			var nextStave = nextStaff[i];
+			if (nextStave) { // Be sure there is the same number of staves on the next line.
+				for (var j = 0; j < nextStave.voices.length; j++) {
+					var nextVoice = nextStave.voices[j];
+					var voice = stave.voices[j];
+					if (voice) { // Be sure there are the same number of voices on the previous line.
+						appendLastMeasure(voice, nextVoice);
+					}
+				}
+			}
+		}
+	}
+
+	function addHintMeasures() {
+		for (var i = 0; i < tune.lines.length; i++) {
+			var line = tune.lines[i].staff;
+			if (line) {
+				var j = i+1;
+				while (j < tune.lines.length && tune.lines[j].staff === undefined)
+					j++;
+				if (j < tune.lines.length) {
+					var nextLine = tune.lines[j].staff;
+					addHintMeasure(line, nextLine);
+				}
+			}
+		}
+	}
+
 	this.parse = function(strTune, switches) {
 		// the switches are optional and cause a difference in the way the tune is parsed.
 		// switches.header_only : stop parsing when the header is finished
 		// switches.stop_on_warning : stop at the first warning encountered.
 		// switches.print: format for the page instead of the browser.
 		// switches.format: a hash of the desired formatting commands.
+		// switches.hint_measures: put the next measure at the end of the current line.
 		if (!switches) switches = {};
 		tune.reset();
 		if (switches.print)
@@ -1481,6 +1520,9 @@ window.ABCJS.parse.Parse = function() {
 		} catch (err) {
 			if (err !== "normal_abort")
 				throw err;
+		}
+		if (switches.hint_measures) {
+			addHintMeasures();
 		}
 	};
 };
